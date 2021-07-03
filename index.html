@@ -17,15 +17,15 @@ function showModal(id) {
     console.log("clicked!" + id);
     $("#editModal").toggle();
     if($("#editModal").is(":visible")) {
-        $("#original-text").val($("#" + id).text());
+        $("#original-text").val($("#" + id).attr("original"));
         var textPosition = $("#" + id).offset();
         textPosition.top += 10;
         textPosition.left += 10;
         $("#editModal").css(textPosition);
     }
 }
-function highlight(line, index){
-	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\"><font color=\"red\">"+line+"</font></span>");
+function highlight(line, index, original){
+	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
 }
 
 function convert(){
@@ -39,7 +39,7 @@ function convert(){
         var key_applied = false;
 		for(let key of rule_keys) {
 			if(rest.startsWith(key)) {
-				output += highlight(rules[key], index);
+				output += highlight(rules[key], index, key);
                 index++;
                 i+=key.length - 1;
                 key_applied = true;
