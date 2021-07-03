@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- saved from url=(0234)https://itc-lms.ecc.u-tokyo.ac.jp/lms/course/report/submission_download/index.html?reportId=65820&idnumber=202105100710B01&downloadFileName=index.html&objectName=2021%2Ffd%2Fd8%2F1a%2Ffdd81a5d-b22b-4d18-a8f2-31687e2bee59&downloadMode= -->
 <html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<script type='text/javascript' src='http://code.jquery.com/jquery-1.7.2.min.js'></script>
 <title>ですます変換</title>
 </head>
 <body data-new-gr-c-s-check-loaded="14.1018.0" data-gr-ext-installed="" cz-shortcut-listen="true">
@@ -12,12 +12,20 @@ var rules = {
 	"します": "する",
 	"ました": "た",
 }
-function swap(index){
-	// 選択肢を提示？
-}
 
+function showModal(id) {
+    console.log("clicked!" + id);
+    $("#editModal").toggle();
+    if($("#editModal").is(":visible")) {
+        $("#original-text").val($("#" + id).text());
+        var textPosition = $("#" + id).offset();
+        textPosition.top += 10;
+        textPosition.left += 10;
+        $("#editModal").css(textPosition);
+    }
+}
 function highlight(line, index){
-	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\"><font color=\"red\">"+line+"</font></span>");
+	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\"><font color=\"red\">"+line+"</font></span>");
 }
 
 function convert(){
@@ -49,7 +57,12 @@ function convert(){
 
 <form><textarea id="source" rows="10" cols="100">原文</textarea><br></form>
 <button onclick="convert()">変換</button>
-<div id="output" contenteditable="true">変換後の文章</div>
+<div id="output">変換後の文章</div>
+<div id="editModal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
+    <div><span>元のテキスト　　</span><input type="text" id="original-text" disabled></div>
+    <div><span>変換後のテキスト</span><input type="text" id="new-text"></div>
+
+</div>
 
 
 
