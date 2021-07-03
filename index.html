@@ -8,6 +8,30 @@
 
 <script>
 document.oncontextmenu = function() { return false; }
+function goodPosition(top, left) {
+    var rightEnd = $("#output")[0].getBoundingClientRect().right;
+    if(left + 300 > rightEnd) {
+        left = rightEnd - 300;
+    }
+    return {top: top, left: left};
+}
+var lastSelectionRange;
+document.onselectionchange = () => {
+    var selection = document.getSelection();
+    var selectionText = selection.toString();
+    if(selectionText.length == 0) {
+        return;
+    }
+    $("#edit-span-modal").hide();
+    var selectionPosition = selection.getRangeAt(0).getBoundingClientRect();
+    var modalPosition =  goodPosition(selectionPosition.bottom, (selectionPosition.right + selectionPosition.left) / 2)
+    $("#edit-text-modal").show();
+    $("#original-text").val(selectionText);
+    $("#new-text").val("");
+    $("#edit-text-modal").css(modalPosition);
+    lastSelectionRange = selection.getRangeAt(0);
+
+};
 outputHistory = []
 var rules = {
 	"します": "する",
@@ -24,32 +48,33 @@ function undo() {
 }
 
 function showModal(id) {
-    console.log("clicked!" + id);
-    $("#editModal").toggle();
-    if($("#editModal").is(":visible")) {
-        $("#original-text").val($("#" + id).attr("original"));
-        $("#new-text").val("");
+    $("#edit-text-modal").hide();
+    $("#edit-span-modal").toggle();
+    if($("#edit-span-modal").is(":visible")) {
+        $("#original-span").val($("#" + id).attr("original"));
+        $("#new-span").val("");
         var textPosition = $("#" + id).offset();
+        textPosition = goodPosition(textPosition.top + 10, textPosition.left + 10);
         textPosition.top += 10;
         textPosition.left += 10;
-        $("#editModal").css(textPosition);
-        $("#editModal").attr("span-id", id);
+        $("#edit-span-modal").css(textPosition);
+        $("#edit-span-modal").attr("span-id", id);
     }
 }
 
 function backToOriginal() {
     outputHistory.push($("#output").html());
-    let spanId = $("#editModal").attr("span-id");
+    let spanId = $("#edit-span-modal").attr("span-id");
     $("#" + spanId).replaceWith($("#" + spanId).attr("original"));
-    $("#editModal").hide();
+    $("#edit-span-modal").hide();
     $("#undoButton").prop('disabled', false);
 }
 
 function updateHere() {
     outputHistory.push($("#output").html());
-    let spanId = $("#editModal").attr("span-id");
-    $("#" + spanId).html("<font color=\"red\">"+$("#new-text").val()+"</font>");
-    $("#editModal").hide();
+    let spanId = $("#edit-span-modal").attr("span-id");
+    $("#" + spanId).html("<font color=\"red\">"+$("#new-span").val()+"</font>");
+    $("#edit-span-modal").hide();
     $("#undoButton").prop('disabled', false);
 }
 
@@ -88,12 +113,16 @@ function convert(){
 <button onclick="convert()">変換</button>
 <button id="undoButton" onclick="undo()" disabled>一つ戻る</button>
 <div id="output">変換後の文章</div>
-<div id="editModal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
+<div id="edit-span-modal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
+    <div><span>元のテキスト　　</span><input type="text" id="original-span" disabled></div>
+    <div><span>変換後のテキスト</span><input type="text" id="new-span"></div>
+    <button onclick="backToOriginal()">元に戻す</button>
+    <button onclick="updateHereSpan()">ここだけ変換</button>
+</div>
+
+<div id="edit-text-modal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
     <div><span>元のテキスト　　</span><input type="text" id="original-text" disabled></div>
     <div><span>変換後のテキスト</span><input type="text" id="new-text"></div>
-    <button onclick="backToOriginal()">元に戻す</button>
-    <button onclick="updateHere()">ここだけ変換</button>
-
 </div>
 
 
