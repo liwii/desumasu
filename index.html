@@ -7,8 +7,11 @@
 <body data-new-gr-c-s-check-loaded="14.1018.0" data-gr-ext-installed="" cz-shortcut-listen="true">
 
 <script>
-document.oncontextmenu = function() { return false; }	
-
+document.oncontextmenu = function() { return false; }
+var rules = {
+	"します": "する",
+	"ました": "た",
+}
 function swap(index){
 	// 選択肢を提示？
 }
@@ -24,27 +27,27 @@ function convert(){
 
 	for(i=0; i<source.length; i++){
 		var rest = source.slice(i, source.length);
-		if (rest.startsWith("します。")){
-		   	output+=highlight("する。", index);
-		   	index++;
-		   	i=i+3;
+		var rule_keys = Object.keys(rules);
+        var key_applied = false;
+		for(let key of rule_keys) {
+			if(rest.startsWith(key)) {
+				output += highlight(rules[key], index);
+                index++;
+                i+=key.length - 1;
+                key_applied = true;
+                break;
+			}
 		}
-		else if (rest.startsWith("ました。")){
-		   	output+=highlight("た。", index);
-		   	index++;
-		   	i=i+3;
-		}
-		else 	
-		{
-			output+=source.slice(i, i+1);
-		}
+        if(!key_applied) {
+            output+=source.slice(i, i+1);
+        }
 	}
 
 	document.getElementById('output').innerHTML = output;
 }
 </script>
 
-<form><textarea id="source" rows="10" cols="100">原文</textarea><br></form> 
+<form><textarea id="source" rows="10" cols="100">原文</textarea><br></form>
 <button onclick="convert()">変換</button>
 <div id="output" contenteditable="true">変換後の文章</div>
 
