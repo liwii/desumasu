@@ -22,7 +22,14 @@ function showModal(id) {
         textPosition.top += 10;
         textPosition.left += 10;
         $("#editModal").css(textPosition);
+        $("#editModal").attr("span-id", id);
     }
+}
+
+function backToOriginal() {
+    let spanId = $("#editModal").attr("span-id");
+    $("#" + spanId).replaceWith($("#" + spanId).attr("original"));
+    $("#editModal").hide();
 }
 function highlight(line, index, original){
 	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
@@ -61,6 +68,7 @@ function convert(){
 <div id="editModal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
     <div><span>元のテキスト　　</span><input type="text" id="original-text" disabled></div>
     <div><span>変換後のテキスト</span><input type="text" id="new-text"></div>
+    <button onclick="backToOriginal()">元に戻す</button>
 
 </div>
 
