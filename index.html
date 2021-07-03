@@ -18,10 +18,20 @@ function goodPosition(top, left) {
 var lastSelectionRange;
 document.onselectionchange = () => {
     var selection = document.getSelection();
-    var selectionText = selection.toString();
-    if(selectionText.length == 0) {
+    var selectionRange = selection.getRangeAt(0);
+    if(selectionRange.collapsed) {
         return;
     }
+    var intersectionWithSpn = false;
+    document.querySelectorAll('.spn').forEach(element => {
+        if(selectionRange.intersectsNode(element)) intersectionWithSpn = true;
+
+    });
+    if(intersectionWithSpn) {
+        $("#edit-text-modal").hide();
+        return;
+    }
+    var selectionText = selection.toString();
     $("#edit-span-modal").hide();
     var selectionPosition = selection.getRangeAt(0).getBoundingClientRect();
     var modalPosition =  goodPosition(selectionPosition.bottom, (selectionPosition.right + selectionPosition.left) / 2)
@@ -79,7 +89,7 @@ function updateHere() {
 }
 
 function highlight(line, index, original){
-	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
+	return ("<span class=\"spn\" id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
 }
 
 function convert(){
