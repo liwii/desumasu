@@ -8,9 +8,19 @@
 
 <script>
 document.oncontextmenu = function() { return false; }
+outputHistory = []
 var rules = {
 	"します": "する",
 	"ました": "た",
+}
+
+function undo() {
+    if(outputHistory.length == 0) return;
+    var lastHtml = outputHistory.pop();
+    $("#output").html(lastHtml);
+    if(outputHistory.length == 0) {
+        $("#undoButton").prop('disabled', true);
+    }
 }
 
 function showModal(id) {
@@ -27,9 +37,11 @@ function showModal(id) {
 }
 
 function backToOriginal() {
+    outputHistory.push($("#output").html());
     let spanId = $("#editModal").attr("span-id");
     $("#" + spanId).replaceWith($("#" + spanId).attr("original"));
     $("#editModal").hide();
+    $("#undoButton").prop('disabled', false);
 }
 function highlight(line, index, original){
 	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
@@ -64,6 +76,7 @@ function convert(){
 
 <form><textarea id="source" rows="10" cols="100">原文</textarea><br></form>
 <button onclick="convert()">変換</button>
+<button id="undoButton" onclick="undo()" disabled>一つ戻る</button>
 <div id="output">変換後の文章</div>
 <div id="editModal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
     <div><span>元のテキスト　　</span><input type="text" id="original-text" disabled></div>
