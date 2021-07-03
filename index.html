@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!-- saved from url=(0234)https://itc-lms.ecc.u-tokyo.ac.jp/lms/course/report/submission_download/index.html?reportId=65820&idnumber=202105100710B01&downloadFileName=index.html&objectName=2021%2Ffd%2Fd8%2F1a%2Ffdd81a5d-b22b-4d18-a8f2-31687e2bee59&downloadMode= -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<title>ですます変換</title>
+</head>
+<body data-new-gr-c-s-check-loaded="14.1018.0" data-gr-ext-installed="" cz-shortcut-listen="true">
+
+<script>
+document.oncontextmenu = function() { return false; }	
+
+function swap(index){
+	// 選択肢を提示？
+}
+
+function highlight(line, index){
+	return ("<span id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\"><font color=\"red\">"+line+"</font></span>");
+}
+
+function convert(){
+	var source = document.getElementById("source").value;
+	var output = "";
+	var index = 0;
+
+	for(i=0; i<source.length; i++){
+		var rest = source.slice(i, source.length);
+		if (rest.startsWith("します。")){
+		   	output+=highlight("する。", index);
+		   	index++;
+		   	i=i+3;
+		}
+		else if (rest.startsWith("ました。")){
+		   	output+=highlight("た。", index);
+		   	index++;
+		   	i=i+3;
+		}
+		else 	
+		{
+			output+=source.slice(i, i+1);
+		}
+	}
+
+	document.getElementById('output').innerHTML = output;
+}
+</script>
+
+<form><textarea id="source" rows="10" cols="100">原文</textarea><br></form> 
+<button onclick="convert()">変換</button>
+<div id="output" contenteditable="true">変換後の文章</div>
+
+
+
+</body></html>
