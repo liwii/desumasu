@@ -15,9 +15,17 @@ function goodPosition(top, left) {
     }
     return {top: top, left: left};
 }
-var lastSelectionRange;
+//var selectionStart = 0;
+//var selectinEnd = 0;
+var index = 0;
 document.onselectionchange = () => {
+    // Selection のときに絶対座標を使って上からdivを被せればいい？
+    // 選んでるところには被せないように
+    // replaceのときはまあなんとかなる
     var selection = document.getSelection();
+    if(selection.collapsed || selection.rangeCount == 0) {
+        return;
+    }
     var selectionRange = selection.getRangeAt(0);
     if(selectionRange.collapsed) {
         return;
@@ -25,7 +33,6 @@ document.onselectionchange = () => {
     var intersectionWithSpn = false;
     document.querySelectorAll('.spn').forEach(element => {
         if(selectionRange.intersectsNode(element)) intersectionWithSpn = true;
-
     });
     if(intersectionWithSpn) {
         $("#edit-text-modal").hide();
@@ -39,13 +46,74 @@ document.onselectionchange = () => {
     $("#original-text").val(selectionText);
     $("#new-text").val("");
     $("#edit-text-modal").css(modalPosition);
-    lastSelectionRange = selection.getRangeAt(0);
-
+    lastSelectionRange = selectionRange;
+    reOrganizeSelectedRange(selectionRange);
 };
 outputHistory = []
 var rules = {
 	"します": "する",
 	"ました": "た",
+}
+
+function reOrganizeSelectedRange(selectedRange) {
+    console.log("called");
+    $(".float").remove();
+
+    var startId = selectedRange.startContainer.parentNode.id;
+    var selectedSpan = document.getElementById(startId);
+    var selectedText = selectedRange.toString();
+    console.log(selectedText);
+    document.querySelectorAll('.nml').forEach(element => {
+        var idx = 0;
+        var text = element.innerText;
+        while(idx < text.length) {
+            idx = text.indexOf(selectedText, idx);
+            if(idx < 0) break;
+            if (element.id == startId && idx == selectedRange.startOffset) {
+                idx++;
+                continue;
+            }
+            addCover(element, selectedText, idx);
+            idx++;
+        }
+    });
+    //var textContent, startIdx, endIdx;
+    //output = "<span class=\"nml\" id=\"span" + index + "\">";
+    //index++;
+    //output += textContent.substr(0, startIdx) + "</span><span class=\"slct\" style=\"color:#0000ff\" id=\"span" + index + "\">" + textContent.substr(startIdx, endIdx) + "</span><span class=\"nml\" id=\"span" + (index + 1)+ "\">" + textContent.substr(endIdx);
+    //output += "</span>"
+    //$("#" + startId).replaceWith(output);
+    //if(startId != endId) $("#" + endId).remove();
+    //var range = document.createRange();
+    //var selectedSpanText = document.getElementById("span" + index).childNodes[0];
+    //index+=2;
+    //range.setStart(selectedSpanText, startIdx);
+    //range.setEnd(selectedSpanText, endIdx);
+    //var selection = document.getSelection();
+    //selection.removeAllRanges();
+    //selection.addRange(range);
+}
+
+function addCover(element, selectedText, idx) {
+    console.log(element.id);
+    console.log(idx);
+    var range = document.createRange();
+    var selectedSpanText = element.childNodes[0];
+    range.setStart(selectedSpanText, idx);
+    range.setEnd(selectedSpanText, idx + selectedText.length);
+    var clientRects = range.getClientRects();
+    if(clientRects.length == 1) {
+        var rect = clientRects[0];
+        $("body").append(`<div class="float" style="position: absolute; left:${rect.left}px; top: ${rect.top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue">${selectedText}</font></div>`);
+    } else if(clientRects.length == 2) {
+        var rect1Chars = Math.floor(clientRects[0].width / (clientRects[0].width + clientRects[1].width) * selectedText.length);
+        var rect2Chars = selectedText.length - rect1Chars;
+        $("body").append(`<div class="float" style="position: absolute; left:${clientRects[0].left}px; top: ${clientRects[0].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue">${selectedText.substr(0, rect1Chars)}</font></div>`);
+        $("body").append(`<div class="float" style="position: absolute; left:${clientRects[1].left}px; top: ${clientRects[1].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue">${selectedText.substr(rect1Chars, rect2Chars)}</font></div>`);
+    }
+    //var selection = document.getSelection();
+    //selection.removeAllRanges();
+    //selection.addRange(range);
 }
 
 function undo() {
@@ -75,12 +143,29 @@ function showModal(id) {
 function backToOriginal() {
     outputHistory.push($("#output").html());
     let spanId = $("#edit-span-modal").attr("span-id");
-    $("#" + spanId).replaceWith($("#" + spanId).attr("original"));
+    console.log(spanId);
+    // 隣り合ったspanと混ぜ合わせる
+    var newText = "";
+    let now = $("#" + spanId);
+    let prev = now.prev();
+    if(prev.length > 0) {
+        newText += prev.text();
+        prev.remove();
+    }
+    newText += now.attr("original")
+    let next = now.next();
+    if(next.length > 0) {
+        newText += next.text();
+        next.remove();
+    }
+    console.log(newText);
+    $("#" + spanId).replaceWith("<span class=\"nml\" id = \"span" + index+ "\">" + newText + "</span>");
+    index++;
     $("#edit-span-modal").hide();
     $("#undoButton").prop('disabled', false);
 }
 
-function updateHere() {
+function updateHereSpan() {
     outputHistory.push($("#output").html());
     let spanId = $("#edit-span-modal").attr("span-id");
     $("#" + spanId).html("<font color=\"red\">"+$("#new-span").val()+"</font>");
@@ -88,14 +173,17 @@ function updateHere() {
     $("#undoButton").prop('disabled', false);
 }
 
+//function highlightBlue(line, index) {
+//	return ("<span class=\"blue\" id=\"blue"+index+"\" ><font color=\"blue\">"+line+"</font></span>");
+//}
 function highlight(line, index, original){
-	return ("<span class=\"spn\" id=\"span"+index+"\" oncontextmenu=\"swap("+index+")\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
+	return ("<span class=\"spn\" id=\"span"+index+"\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
 }
 
 function convert(){
 	var source = document.getElementById("source").value;
-	var output = "";
-	var index = 0;
+    var output = "<span class=\"nml\" id=\"span" + index + "\">";
+    index++;
 
 	for(i=0; i<source.length; i++){
 		var rest = source.slice(i, source.length);
@@ -103,7 +191,10 @@ function convert(){
         var key_applied = false;
 		for(let key of rule_keys) {
 			if(rest.startsWith(key)) {
+                output += "</span>"
 				output += highlight(rules[key], index, key);
+                index++;
+                output += "<span class=\"nml\" id=\"span" + index + "\">";
                 index++;
                 i+=key.length - 1;
                 key_applied = true;
@@ -114,6 +205,7 @@ function convert(){
             output+=source.slice(i, i+1);
         }
 	}
+    output += "</span>"
 
 	document.getElementById('output').innerHTML = output;
 }
@@ -123,14 +215,14 @@ function convert(){
 <button onclick="convert()">変換</button>
 <button id="undoButton" onclick="undo()" disabled>一つ戻る</button>
 <div id="output">変換後の文章</div>
-<div id="edit-span-modal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
+<div id="edit-span-modal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgba(168, 168, 168, 0.9); border:2px black; display: none; z-index: 1000; margin:10px;">
     <div><span>元のテキスト　　</span><input type="text" id="original-span" disabled></div>
     <div><span>変換後のテキスト</span><input type="text" id="new-span"></div>
     <button onclick="backToOriginal()">元に戻す</button>
     <button onclick="updateHereSpan()">ここだけ変換</button>
 </div>
 
-<div id="edit-text-modal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgb(168, 168, 168); display: none; z-index: 1000; margin:10px;">
+<div id="edit-text-modal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgba(168, 168, 168, 0.9); border:2px black; display: none; z-index: 1000; margin:10px;">
     <div><span>元のテキスト　　</span><input type="text" id="original-text" disabled></div>
     <div><span>変換後のテキスト</span><input type="text" id="new-text"></div>
 </div>
