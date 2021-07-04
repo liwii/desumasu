@@ -77,21 +77,6 @@ function reOrganizeSelectedRange(selectedRange) {
             idx++;
         }
     });
-    //var textContent, startIdx, endIdx;
-    //output = "<span class=\"nml\" id=\"span" + index + "\">";
-    //index++;
-    //output += textContent.substr(0, startIdx) + "</span><span class=\"slct\" style=\"color:#0000ff\" id=\"span" + index + "\">" + textContent.substr(startIdx, endIdx) + "</span><span class=\"nml\" id=\"span" + (index + 1)+ "\">" + textContent.substr(endIdx);
-    //output += "</span>"
-    //$("#" + startId).replaceWith(output);
-    //if(startId != endId) $("#" + endId).remove();
-    //var range = document.createRange();
-    //var selectedSpanText = document.getElementById("span" + index).childNodes[0];
-    //index+=2;
-    //range.setStart(selectedSpanText, startIdx);
-    //range.setEnd(selectedSpanText, endIdx);
-    //var selection = document.getSelection();
-    //selection.removeAllRanges();
-    //selection.addRange(range);
 }
 
 function addCover(element, selectedText, idx) {
@@ -111,9 +96,6 @@ function addCover(element, selectedText, idx) {
         $("body").append(`<div class="float" style="position: absolute; left:${clientRects[0].left}px; top: ${clientRects[0].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue" style="font-weight: bold;">${selectedText.substr(0, rect1Chars)}</font></div>`);
         $("body").append(`<div class="float" style="position: absolute; left:${clientRects[1].left}px; top: ${clientRects[1].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue" style="font-weight: bold;">${selectedText.substr(rect1Chars, rect2Chars)}</font></div>`);
     }
-    //var selection = document.getSelection();
-    //selection.removeAllRanges();
-    //selection.addRange(range);
 }
 
 function undo() {
@@ -189,26 +171,22 @@ function updateHereNml() {
     $("#undoButton").prop('disabled', false);
 }
 
-//function highlightBlue(line, index) {
-//	return ("<span class=\"blue\" id=\"blue"+index+"\" ><font color=\"blue\">"+line+"</font></span>");
-//}
 function highlight(line, index, original){
-	return ("<span class=\"spn\" id=\"span"+index+"\" onclick=\"showModal(this.id)\" original= " + original + "><font color=\"red\">"+line+"</font></span>");
+	return ("<span class=\"spn\" id=\"span"+index+"\" onclick=\"showModal(this.id)\" original=" + original + "><font color=\"red\">"+line+"</font></span>");
 }
 
-function convert(){
-	var source = document.getElementById("source").value;
+function textToSpans(text, appliedRules) {
     var output = "<span class=\"nml\" id=\"span" + index + "\">";
     index++;
 
-	for(i=0; i<source.length; i++){
-		var rest = source.slice(i, source.length);
-		var rule_keys = Object.keys(rules);
+	for(i=0; i<text.length; i++){
+		var rest = text.slice(i, text.length);
+		var rule_keys = Object.keys(appliedRules);
         var key_applied = false;
 		for(let key of rule_keys) {
 			if(rest.startsWith(key)) {
                 output += "</span>"
-				output += highlight(rules[key], index, key);
+				output += highlight(appliedRules[key], index, key);
                 index++;
                 output += "<span class=\"nml\" id=\"span" + index + "\">";
                 index++;
@@ -218,13 +196,33 @@ function convert(){
 			}
 		}
         if(!key_applied) {
-            output+=source.slice(i, i+1);
+            output+=text.slice(i, i+1);
         }
 	}
     output += "</span>"
-
-	document.getElementById('output').innerHTML = output;
+    return output
 }
+
+function updateAll() {
+    outputHistory.push($("#output").html());
+    $("#edit-text-modal").hide();
+    $(".float").remove();
+    let selectedText = lastSelectionRange.toString();
+    let newText = $("#new-text").val();
+    let appliedRules = {};
+    appliedRules[selectedText] = newText;
+    document.querySelectorAll(".nml").forEach(span => {
+        $("#" + span.id).replaceWith(textToSpans(span.innerText, appliedRules));
+    });
+    $("#undoButton").prop('disabled', false);
+}
+
+function convert(){
+	var source = document.getElementById("source").value;
+    var output = textToSpans(source, rules);
+    document.getElementById('output').innerHTML = output;
+}
+
 </script>
 
 <form><textarea id="source" rows="10" cols="100">原文</textarea><br></form>
@@ -242,6 +240,7 @@ function convert(){
     <div><span>元のテキスト　　</span><input type="text" id="original-text" disabled></div>
     <div><span>変換後のテキスト</span><input type="text" id="new-text"></div>
     <button onclick="updateHereNml()">ここだけ変換</button>
+    <button onclick="updateAll()">全て変換</button>
 </div>
 
 
