@@ -104,12 +104,12 @@ function addCover(element, selectedText, idx) {
     var clientRects = range.getClientRects();
     if(clientRects.length == 1) {
         var rect = clientRects[0];
-        $("body").append(`<div class="float" style="position: absolute; left:${rect.left}px; top: ${rect.top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue">${selectedText}</font></div>`);
+        $("body").append(`<div class="float" style="position: absolute; left:${rect.left}px; top: ${rect.top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue" style="font-weight: bold;">${selectedText}</font></div>`);
     } else if(clientRects.length == 2) {
         var rect1Chars = Math.floor(clientRects[0].width / (clientRects[0].width + clientRects[1].width) * selectedText.length);
         var rect2Chars = selectedText.length - rect1Chars;
-        $("body").append(`<div class="float" style="position: absolute; left:${clientRects[0].left}px; top: ${clientRects[0].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue">${selectedText.substr(0, rect1Chars)}</font></div>`);
-        $("body").append(`<div class="float" style="position: absolute; left:${clientRects[1].left}px; top: ${clientRects[1].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue">${selectedText.substr(rect1Chars, rect2Chars)}</font></div>`);
+        $("body").append(`<div class="float" style="position: absolute; left:${clientRects[0].left}px; top: ${clientRects[0].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue" style="font-weight: bold;">${selectedText.substr(0, rect1Chars)}</font></div>`);
+        $("body").append(`<div class="float" style="position: absolute; left:${clientRects[1].left}px; top: ${clientRects[1].top - 5}px; padding: 0px; background: rgb(255, 255, 255); display: inline-block; z-index: 100;"><font color="blue" style="font-weight: bold;">${selectedText.substr(rect1Chars, rect2Chars)}</font></div>`);
     }
     //var selection = document.getSelection();
     //selection.removeAllRanges();
