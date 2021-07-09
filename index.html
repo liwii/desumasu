@@ -375,12 +375,14 @@ function convert(){
 
 </script>
 
-<div id="select-examples"></div>
+<h3>ですます変換</h3>
+<div><p>「ですます調」の文章から「だである調」の文章への変換を支援するツールです。</p></div>
+<div id="select-examples" style="margin-top: 30px; margin-bottom: 30px;"></div>
 
 <form><textarea id="source" rows="10" cols="100">原文</textarea><br></form>
 <button onclick="convert()">変換</button>
 <button id="undoButton" onclick="undo()" disabled>一つ戻る</button>
-<div id="output">変換後の文章</div>
+<div id="output" style="margin-top: 30px;">変換後の文章</div>
 <div id="edit-span-modal" style="position: absolute; left: 0px; top: 0px; width: 300px; height: 100px; background: rgba(168, 168, 168, 0.9); border:2px black; display: none; z-index: 1000; margin:10px;">
     <div><span>元のテキスト　　</span><input type="text" id="original-span" disabled></div>
     <div><span>変換後のテキスト</span><input type="text" id="new-span"></div>
