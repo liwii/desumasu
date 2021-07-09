@@ -62,7 +62,6 @@ function reOrganizeSelectedRange(selectedRange) {
     var startId = selectedRange.startContainer.parentNode.id;
     var selectedSpan = document.getElementById(startId);
     var selectedText = selectedRange.toString();
-    console.log(selectedText);
     document.querySelectorAll('.nml').forEach(element => {
         var idx = 0;
         var text = element.innerText;
@@ -80,8 +79,6 @@ function reOrganizeSelectedRange(selectedRange) {
 }
 
 function addCover(element, selectedText, idx) {
-    console.log(element.id);
-    console.log(idx);
     var range = document.createRange();
     var selectedSpanText = element.childNodes[0];
     range.setStart(selectedSpanText, idx);
@@ -218,7 +215,7 @@ function updateAll() {
 }
 
 function convert(){
-	var source = document.getElementById("source").value;
+	var source = document.getElementById("source").value.replaceAll("\n", "").replaceAll("　", "");
     var output = textToSpans(source, rules);
     document.getElementById('output').innerHTML = output;
 }
