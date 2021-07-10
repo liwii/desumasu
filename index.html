@@ -303,6 +303,7 @@ function updateHereSpan() {
 }
 function updateHereNml() {
     outputHistory.push($("#output").html());
+    $(".float").remove();
     $("#edit-text-modal").hide();
     let span = lastSelectionRange.startContainer.parentElement;
     let textPrev = span.innerText.substr(0, lastSelectionRange.startOffset);
